@@ -15,6 +15,8 @@ type config struct {
 	Issuer string
 	// Aud is the expected aud(ience) value for valid OIDC tokens
 	Aud string
+	// ExpectedSubject is the expected sub(ject) value for valid OIDC tokens
+	ExpectedSubject string
 	// UserTemplate is a template that, when rendered with the JWT claims, should
 	// match the user being authenticated.
 	UserTemplate string
@@ -46,6 +48,8 @@ func configFromArgs(args []string) (*config, error) {
 			c.Issuer = parts[1]
 		case "aud":
 			c.Aud = parts[1]
+		case "sub":
+			c.ExpectedSubject = parts[1]
 		case "user_template":
 			c.UserTemplate = parts[1]
 		case "groups_claim_key":

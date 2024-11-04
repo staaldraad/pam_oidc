@@ -88,12 +88,26 @@ func pam_sm_authenticate_go(pamh *C.pam_handle_t, flags C.int, argc C.int, argv 
 	auth.GroupsClaimKey = cfg.GroupsClaimKey
 	auth.AuthorizedGroups = cfg.AuthorizedGroups
 	auth.RequireACRs = cfg.RequireACRs
+	auth.ExpectedSubject = cfg.ExpectedSubject
 
 	if err := auth.Authenticate(ctx, user, token); err != nil {
 		pamSyslog(pamh, syslog.LOG_WARNING, "failed to authenticate: %v", err)
 		return C.PAM_AUTH_ERR
 	}
 
+	return C.PAM_SUCCESS
+}
+
+//export pam_sm_acct_mgmt_go
+func pam_sm_acct_mgmt_go(pamh *C.pam_handle_t, flags C.int, argc C.int, argv **C.char) C.int {
+	// From pam_sm_acct_mgmt
+	// This function performs the task of establishing whether the user
+	// is permitted to gain access at this time. It should be understood
+	// that the user has previously been validated by an authentication module.
+	// We assume that pam_sm_authenticate_go has been called and done
+	// the authentication.
+	// Because token expiration checks happen in pam_sm_acct_mgmt_go, we do not
+	// need to do another expiration check here (there shouldn't be a multi-minute delay between calls)
 	return C.PAM_SUCCESS
 }
 

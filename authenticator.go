@@ -20,6 +20,11 @@ import (
 )
 
 type authenticator struct {
+	// ExpectedSubject is the value that is expected to be set on the .Subject
+	// This provides additional verfication for OIDC tokens from sources such
+	// as GitHub Actions
+	ExpectedSubject string
+
 	// UserTemplate is a template that, when rendered with the JWT claims, should
 	// match the user being authenticated.
 	//
@@ -83,6 +88,10 @@ func (a *authenticator) Authenticate(ctx context.Context, user string, token str
 	claims, err := a.verifier.VerifyRaw(ctx, a.aud, token)
 	if err != nil {
 		return fmt.Errorf("verifying token: %v", err)
+	}
+
+	if a.ExpectedSubject != "" && claims.Subject != a.ExpectedSubject {
+		return fmt.Errorf("expected subject is %q but jwt sub is %q", a.ExpectedSubject, claims.Subject)
 	}
 
 	userTemplate := "{{.Subject}}"
